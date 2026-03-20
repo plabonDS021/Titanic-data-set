@@ -2,5 +2,5 @@ pandas
 numpy
 matplotlib
 seaborn
-scikot-learn
+scikit-learn
 joblib
