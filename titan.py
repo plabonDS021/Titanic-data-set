@@ -48,3 +48,25 @@ axes[1,1].set_title('Age Distribution')
 
 plt.tight_layout()
 plt.show()
+
+# ### Obsevations 
+# -women survived at a much higher rate than men (-74% vs 19%)
+# - 1st class passengers survived more than 3rd c;ass (63% vs 24%)
+# - most passengers were age between 20 and 40
+# - data is slightly imbalanced - more deaths than survivals
+
+## Feature Engineering
+
+def engineer_features(df):
+    df=df.copy()
+    df['Age']= df['Age'].fillna(df['Age'].median())
+    df['Embarked']= df['Embarked'].fillna('S')
+    df['Fare']= df['Fare'].fillna(df['Fare'].median())
+    df['FamilySize']=df['SibSp'] + df['Parch'] +1
+    df['Sex']=df['Sex'].map({'male':0, 'female':1})
+    df['Embarked']= df['Embarked'].map({'S':0, 'C':1,'Q':2})
+    return df
+
+
+train = engineer_features(train)
+test = engineer_features(test)
