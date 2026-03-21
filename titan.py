@@ -70,3 +70,39 @@ def engineer_features(df):
 
 train = engineer_features(train)
 test = engineer_features(test)
+
+## Train the Model
+FEATURES =['Pclass', 'Sex', 'Age', 'Fare', 'Embarked', 'FamilySize']
+X=train[FEATURES]
+y=train['Survived']
+model = RandomForestClassifier(n_estimators=200, max_depth=6, random_state=42)
+cv_score = cross_val_score(model, X, y, cv=5, scoring='accuracy')
+print(f'CV Accuracy: {cv_score.mean(): .4f} ± {cv_score.std(): .4f}')
+
+##Evaluation
+
+model.fit(X, y)
+
+importances = pd.Series(model.feature_importances_, index=FEATURES)
+importances.sort_values().plot(kind='barh', title='Feature importance')
+plt.tight_layout()
+plt.show()
+
+y_pred = model.predict(X)
+cm = confusion_matrix(y, y_pred) 
+disp = ConfusionMatrixDisplay(cm, display_labels=['Died', 'Survived'])
+disp.plot()
+plt.title('Confusion matrix')
+plt.show()
+
+## Submission File
+preds = model.predict(test[FEATURES])
+
+submission =pd.DataFrame({
+    'PassengerId': test['PassengerId'],
+    'Survived': preds
+})
+
+submission.to_csv('Submission.csv', index=False)
+print('Done!')
+submission.head()
