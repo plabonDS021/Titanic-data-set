@@ -15,7 +15,7 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 ## load the data set
 
-PATH = "/kaggle/input/titanic/" if os.path.exists("/kaggle") else "./data/titanic/"
+PATH = "/kaggle/input/competitions/titanic/" if os.path.exists("/kaggle") else "./data/titanic/"
 train =pd.read_csv(PATH + 'train.csv')
 test = pd.read_csv(PATH + 'test.csv')
 print('Train Shape:', train.shape)
@@ -65,6 +65,31 @@ def engineer_features(df):
     df['FamilySize']=df['SibSp'] + df['Parch'] +1
     df['Sex']=df['Sex'].map({'male':0, 'female':1})
     df['Embarked']= df['Embarked'].map({'S':0, 'C':1,'Q':2})
+     #extract title from name
+    df['Title']=df['Name'].str.extract(r' ([A-Za-z]+)\.')
+
+    #group rare titles together
+    df['Title'] = df['Title'].replace(
+        ['Lady', 'Countries', 'Capt', 'Col', 'Don', 'Dr', 'Major', 'Rev', 'Sir', 'Jonkher', 'Dona'],
+        'Rare'
+    )
+
+    #fix some inconsistent titles
+    df['Title'] = df['Title'].replace('Miles', 'Miss')
+    df['Title'] = df['Title'].replace('Ms', 'Miss')
+    df['Title'] = df['Title'].replace('Mme', 'Mrs')
+
+    ## encode title to number
+    df['Title'] = df['Title'].map({
+        'MR':0, 'Miss':1, 'Mrs':2, 'Master':3, "Rare":4
+    })
+
+    #fill any remaining nulls
+    df['Title'] = df['Title'].fillna(0)
+
+    ##is the passenger is travelling alone
+    df['IsAlone'] = (df['FamilySize'] ==1).astype(int)
+
     return df
 
 
@@ -72,7 +97,7 @@ train = engineer_features(train)
 test = engineer_features(test)
 
 ## Train the Model
-FEATURES =['Pclass', 'Sex', 'Age', 'Fare', 'Embarked', 'FamilySize']
+FEATURES =['Pclass', 'Sex', 'Age', 'Fare', 'Embarked', 'FamilySize', 'Title', 'IsAlone']
 X=train[FEATURES]
 y=train['Survived']
 model = RandomForestClassifier(n_estimators=200, max_depth=6, random_state=42)
