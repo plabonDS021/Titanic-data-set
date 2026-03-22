@@ -80,12 +80,9 @@ def engineer_features(df):
     df['Title'] = df['Title'].replace('Mme', 'Mrs')
 
     ## encode title to number
-    df['Title'] = df['Title'].map({
-        'MR':0, 'Miss':1, 'Mrs':2, 'Master':3, "Rare":4
-    })
-
-    #fill any remaining nulls
-    df['Title'] = df['Title'].fillna(0)
+    df['Title'] = df['Title'].fillna('Mr')
+    df = pd.get_dummies(df, columns=['Title'], prefix='Title')
+    
 
     ##is the passenger is travelling alone
     df['IsAlone'] = (df['FamilySize'] ==1).astype(int)
@@ -97,7 +94,8 @@ train = engineer_features(train)
 test = engineer_features(test)
 
 ## Train the Model
-FEATURES =['Pclass', 'Sex', 'Age', 'Fare', 'Embarked', 'FamilySize', 'Title', 'IsAlone']
+FEATURES =['Pclass', 'Sex', 'Age', 'Fare', 'Embarked', 'FamilySize', 'Title_Mr',
+           'Title_Miss', 'Title_Mrs', 'Title_Master', 'Title_Rare', 'IsAlone']
 X=train[FEATURES]
 y=train['Survived']
 model = RandomForestClassifier(n_estimators=200, max_depth=6, random_state=42)
